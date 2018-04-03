@@ -1,0 +1,497 @@
+<%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<%@ page language="java"%> 
+<%@ page import="java.util.*"%> <!-- //获取系统时间必须导入的  -->
+<%@ page import="java.text.*"%> <!-- //获取系统时间必须导入的  -->
+<% 
+String datetime=new SimpleDateFormat("yyyy").format(Calendar.getInstance().getTime()); //获取系统时间 
+request.setAttribute("currentTime",datetime);
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta charset="UTF-8">
+  <c:choose><c:when test="${session.comHospital.isHead==0}"><title>中电科社区健康管理平台</title></c:when><c:when test="${session.communityHospitalGroup!=null}"><title>社区健康管理系统</title></c:when><c:otherwise><title>社区健康服务站</title></c:otherwise></c:choose>
+  <link rel="stylesheet" href="/jmjkms/css/cssreset.css">
+  <link rel="stylesheet" href="/jmjkms/css/main.css">
+  <link rel="stylesheet" href="/jmjkms/css/font-awesome-4.5.0/css/font-awesome.min.css">
+  <link type="text/css" href="/jmjkms/css/confirm.css">
+  <link rel="stylesheet" href="/jmjkms/select2/css/select2.css">
+</head>
+<body>
+  <!-- 顶栏 start -->
+  <s:include value="/include/header.jsp" />
+  <!-- 顶栏 end --> 
+  <div class="main-content clearfix">
+    <!-- 主菜单 start -->
+    <s:include value="/include/nav.jsp" />
+    <!-- 主菜单 end -->
+    <!-- 主容器 start -->
+    <div class="container">
+      <h3 class="current-title">居民健康档案</h3>
+      <!-- 搜索容器 start -->
+      <div class="search-content">
+       <input name="yemianname" value="01201" type="hidden"/>
+     <form id="entity" action="healthFileAction!searchHealthFile.action">
+     <input id="cp" type="hidden" name="cp1" value="${cp}">
+     <div class="search-item">
+     <s:if test="issq==0"><!-- 0是平台管理员登陆，1是集团登陆，2是其他登陆 -->
+        <label>社区集团：</label>
+       	<select name="searchbean.sqid">
+       		<option value="">全部</option>
+       	  <s:iterator value="groups" var="g">
+       		<option value="${g.GId}" <c:if test="${g.GId eq searchbean.sqid}">selected</c:if>>${g.groupName}</option>
+       	  </s:iterator>
+       	</select>
+       	</s:if>
+     <s:if test="issq==1"><!-- 0是平台管理员登陆，1是集团登陆，2是其他登陆 -->
+       <label>社区医院：</label>
+       	<select name="searchbean.sqid">
+       		<option value="">全部</option>
+       	  <s:iterator value="hospitals" var="h">
+       		<option value="${h.communityHospitalId}" <c:if test="${h.communityHospitalId eq searchbean.sqid}">selected</c:if>>${h.communityHospital}</option>
+       	  </s:iterator>
+       	</select>
+       	</s:if>
+       <label>查询选项：<input type="hidden" name="issetsearch" value="true"></input></label>
+       <select name="searchbean.selectFlag" >
+         <option value="1" <c:if test="${'1' eq searchbean.selectFlag}">selected</c:if>>姓名</option>
+         <option value="2" <c:if test="${'2' eq searchbean.selectFlag}">selected</c:if>>身份证号</option>
+         <option value="3" <c:if test="${'3' eq searchbean.selectFlag}">selected</c:if>>档案编号</option>
+       </select>
+
+       <input name="searchbean.selectValue" maxlength="18"   type="text" class="w150 temp" maxlength='20' value="${searchbean.selectValue}">
+
+       <label>年龄：</label>
+        <input  id="input1"  maxlength="4" name="searchbean.lowAge" type="text" class="w40" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" value="<c:if test="${searchbean.lowAge!=0}">${searchbean.lowAge}</c:if>">至<input  id="input2"  maxlength="4" name="searchbean.highAge" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" value="<c:if test="${searchbean.highAge!=0}">${searchbean.highAge}</c:if>" type="text" class="w40">岁
+     </div>
+    <%--  <div class="search-item">
+       <label>出生日期：</label>
+      <input class="startTime" name="searchbean.lowBrithday" onfocus="this.blur()" type="text" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" value="<fmt:formatDate value="${searchbean.lowBrithday}"  pattern="yyyy-MM-dd"/>" >
+       至
+       <input class="endTime" name="searchbean.highBrithday" onfocus="this.blur()" type="text" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" value="<fmt:formatDate value="${searchbean.highBrithday}"  pattern="yyyy-MM-dd"/>">
+     </div> --%>
+     <div class="search-item">
+       <label>建档日期：</label>
+       <input class="startTime" name="searchbean.lowFileDate" onfocus="this.blur()" type="text" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" value="<fmt:formatDate value="${searchbean.lowFileDate}"  pattern="yyyy-MM-dd"/>">
+       至
+        <input class="endTime" name="searchbean.highFileDate" onfocus="this.blur()" type="text" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" value="<fmt:formatDate value="${searchbean.highFileDate}"  pattern="yyyy-MM-dd"/>">
+     </div>
+     <div class="search-item">
+     <c:if test="${flagPingTai==false}">
+     <c:if test="${flag==false}">
+       <label>责任医生：</label>
+       
+       <select name="searchbean.staffId" class="js-example-basic-single" class="select2" style="width: 170px;" >
+			 <option value="">请选择</option>
+         	 <s:iterator value="specialDoctor" var="s">
+         	 	<option value="${s.staffId}" <c:if test="${s.staffId eq searchbean.staffId}">selected</c:if>>${s.name}</option>
+			 </s:iterator>
+			</select>
+       
+      <%--  <select name="searchbean.name" class="js-example-basic-single" class="select2" style="width: 170px;">
+       	 <option value="">请选择</option>
+         <s:iterator value="staffs" var="s">
+         <option value="${s.name}" <c:if test="${s.name eq searchbean.name}">selected</c:if>>${s.name}</option>
+         </s:iterator>
+       </select> --%>
+      
+       <label>建档人：</label>
+       
+        <select name="searchbean.filePeople" class="js-example-basic-single" class="select2" style="width: 170px;">
+         <option value="">请选择</option>
+         <s:iterator value="staffs" var="s">
+         <option value="${s.name}" <c:if test="${s.name eq searchbean.filePeople}">selected</c:if>>${s.name}</option>
+         </s:iterator>
+       </select>
+       <label>录入人：</label>
+      
+       <select name="searchbean.enterPeople" class="js-example-basic-single" class="select2" style="width: 170px;">
+          <option value="">请选择</option>
+         <s:iterator value="staffs" var="s">
+         <option value="${s.name}" <c:if test="${s.name eq searchbean.enterPeople}">selected</c:if>>${s.name}</option>
+         </s:iterator>
+       </select> 
+        </c:if>
+       </c:if>
+     </div>
+     <div class="search-item">
+       <label>性别查询：</label>
+       <input id="all-sex" type="radio" name="searchbean.sex" value="2" <c:if test="${searchbean.sex==null||searchbean.sex==2}"> checked</c:if> ><label for="all-sex">全部</label>
+       <input id="man" type="radio"  name="searchbean.sex" value="0" <c:if test="${searchbean.sex==0}"> checked</c:if>><label for="man">男</label>
+       <input id="women" type="radio"  name="searchbean.sex" value="1" <c:if test="${searchbean.sex==1 }"> checked</c:if>><label for="women">女</label>
+     </div>
+     
+     <div class="search-item">
+       <label>档案状态：</label>
+       <input id="zhengchang" type="radio" name="searchbean.danganzhuangtai" value="2" <c:if test="${searchbean.danganzhuangtai==null||searchbean.danganzhuangtai==2}"> checked</c:if>><label for="zhengchang">正常</label>
+       <input id="zhuxiao" type="radio"  name="searchbean.danganzhuangtai" value="1" <c:if test="${searchbean.danganzhuangtai==1}"> checked</c:if>><label for="zhuxiao">注销</label>
+       <input id="siwang" type="radio"  name="searchbean.danganzhuangtai" value="0" <c:if test="${searchbean.danganzhuangtai==0}"> checked</c:if>><label for="siwang">死亡</label>
+     </div>
+    <%--  <div class="search-item">
+       <label>家庭住址：</label>
+       <select name="searchbean.sheng">
+         <option value="">河北省</option>
+         <option value="">项目1</option>
+       </select>
+       <select name="searchbean.shi">
+         <option value="">石家庄市</option>
+         <option value="">项目1</option>
+       </select>
+       <select name="searchbean.qu">
+         <option value="">桥西区</option>
+         <option value="">项目1</option>
+       </select>
+       <input type="text" class="w150">
+     </div> --%>
+     <div class="btn-content">
+       <input type="submit" value="查询" class="btn" name="" id="bijiao">
+       <a id="news" href="javascript:;" class="btn-xinzeng btn">重置</a>
+       <a class="btn-xinzeng btn" href="healthFileAction!turnToAddHealthFile.action" class="btn">添加</a>
+       <a class="btn-xinzeng btn"  onclick="clickon_01()"  id="btn_alert_01">导入健康档案</a>
+       <!-- <input type="button" value="导入健康档案" class="btn-xinzeng btn"  onclick="clickon_01()"  id="btn_alert_01"> -->
+     </div>
+ 	</form>
+ 	
+    <div id="mask_alert" class="mask_alert">
+    </div>
+    <div id="demo_alert" class="demo_alert">
+    <div id="fa" class="btn-close">
+	    <i class="fa fa-close"></i>
+    </div>
+    <div id="button_alert_2">
+    <form id="form_alert_01" style="display:none;" onsubmit="return checkForm()" action="<%=basePath %>healthFileAction!input.action" method="post"  enctype="multipart/form-data" >
+   	<input  class="tan-btn btn" type="file" id="fileSubmit" name="upload" />
+   	<input class="tan-btn tan-btn-01 btn"  type="submit"  value="导入健康档案" />
+    </form>
+    </div>   
+      </div>
+      <!-- 搜索容器 end -->
+      <!-- 结果容器 start -->
+      <div class="table-content">
+     <form action="healthFileAction!fuction.action" method="post"> 
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <!-- <th> <input type="checkbox"  id="all" name="allCK"
+							onclick="javascript:allCheck()" ><label for="all-check">全选</label></th> -->
+              
+              <th>姓名</th>
+              <th>性别</th>
+              <th>年龄</th>
+              <th>档案编号</th>
+              <th>居委会（村）</th>
+              <th>家庭住址</th>
+              <th>档案状态</th>
+              <th>操作</th>
+              <th>归属</th>
+            </tr>
+          </thead>
+          <tbody>
+           
+           <s:iterator value="healthFileCloudList" status="n">
+           <input type="hidden" name="choice1" value="${healthFileId}"/>
+            <tr>
+             
+              <%-- <td><input class="zyq qq" type="checkbox" name="allHealthFileId" id="ck_id" value="${healthFileId}"></td> --%>
+              
+              
+              <td><c:out value="${name}"></c:out></td>
+              <td>
+              <c:if test="${sex==false}">男</c:if>
+              <c:if test="${sex==true}">女</c:if>
+              </td>
+              <td><c:out value="${currentTime-(fn:substring(idNum, 6, 10))}"  ></c:out></td> 
+              <%-- <td><c:out value="${birthDate}"></c:out></td> --%>
+              <td><c:out value="${fileNum}"></c:out></td>
+              <td><c:out value="${currentOffice}"></c:out></td>
+              <td><c:out value="${currentResidentCommittee}"></c:out></td>
+               <td>
+              <c:if test="${healthFileType=='0'}">
+              	死亡
+              </c:if>
+              <c:if test="${healthFileType=='1'}">
+             	 注销
+              </c:if>
+              <c:if test="${healthFileType=='2'}">
+             	 正常
+              </c:if>
+              </td>
+              <td>
+                <c:if test="${belongSystem=='2'}">
+             	  <a class="btn-xianshi"  href="healthFileAction!turnToHealthFileView.action?healthFileId=${healthFileId}&healthCloudId=${-id}&belongSystemQianDuan=2">详情</a>
+                </c:if>
+                <c:if test="${belongSystem=='1'}">
+                <a class="btn-xianshi"  href="healthFileAction!turnToHealthFileView.action?healthFileId=${healthFileId}&healthCloudId=${-id}&belongSystemQianDuan=1">详情</a>
+                <a class="btn-xiugai"  href="healthFileAction!turnToHealthFileDetil.action?healthFileId=${healthFileId}&hosId=${communityHospital.communityHospitalId}&healthCloudId=${-id}">编辑</a>
+                <a href='javascript:;' id="btn_alert" class="btn_alert btn-shanchu">移除</a>
+                </c:if> 
+                 <c:if test="${belongSystem=='3'}">
+             	  <a class="btn-xianshi"  href="healthFileAction!turnToHealthFileView.action?healthFileId=${healthFileId}&healthCloudId=${-id}">详情</a>
+                </c:if>
+                <div id="mask_alert" class="mask_alert">
+				</div>
+				<div id="demo_alert" class="demo_alert">
+					<div id="fa" class="btn-close">
+						<i class="fa fa-close"></i>
+					</div>
+					<div class="tan_tit">姓名：${name}<br></div>
+					<div id="button_alert">
+						
+						<a href="healthFileAction!cancelHealthFile.action?healthFileId=${healthFileId}&healthCloudId=${-id}"  class="btn btn_white btn-shanchu" id="btn_write_off">注销</a>
+					 	<a  href="healthFileAction!deleteHealthFile.action?healthFileId=${healthFileId}&healthCloudId=${-id}" class="btn btn_white btn-shanchu" id="btn_delete">删除</a>
+						<a href="healthFileAction!killHealthFile.action?healthFileId=${healthFileId}&healthCloudId=${-id}"   class="btn btn_white btn-shanchu" id="btn_regist" >死亡登记</a>
+					</div>
+				</div>	
+              </td>
+              <td>
+              <c:if test="${belongSystem=='1'}">
+              	社区医院
+              </c:if>
+              <c:if test="${belongSystem=='2'}">
+             	 养老机构
+              </c:if>
+              <c:if test="${belongSystem=='3'}">
+             	 居家养老
+              </c:if>
+              </td>
+            </tr>
+            </s:iterator>
+           
+          </tbody>
+        </table>
+         <input type="hidden" name="conFlag"  id="act" value=""/>
+        <!-- 分页 Start -->
+        <div class="sum-btn">
+	        <div class="page">
+	          ${pageHtml}
+	        </div>
+	        <div class="btn-content2">
+	       		 <input type="submit" class="btn btn-daochu"  value="导出本页"  onclick="run01()"></input>
+	          <input type="submit" class="btn btn-daochu"  value="导出全部"  onclick="run02()"></input>
+	        </div>
+        </div>
+        <!-- 分页 end -->
+        
+        </form> 
+      </div>
+
+
+</div>
+    </div>
+    
+    
+    <!-- 主容器 end -->
+    <!-- 底栏 Start-->
+    <s:include value="/include/footer.jsp" />
+    <!-- 底栏 Start-->
+  </div>
+	
+		
+<%--  <script src="/jmjkms/js/jquery-2.1.1.min.js"></script>  --%>
+<script src="/jmjkms/js/threecity/jq.js"></script>
+<script src="/jmjkms/js/laydate/laydate.js"></script>
+<script src="/jmjkms/js/base.js"></script>
+<script type="text/javascript" src="/jmjkms/js/confirm/Validform_v5.3.2_min.js"></script>
+<script src="/jmjkms/select2/js/select2.full.js"></script>
+<script type="text/javascript">
+$(function(){
+      $("#registerform").Validform({
+        showAllError:false,
+        tiptype:function(msg){          
+          alert(msg);
+        }
+      });
+  });
+</script>
+<script type="text/javascript">
+function deleteHealthFile(){
+		
+		$.ajax({
+			type : "post",
+			url : "healthFileAction!getFileNumAuto.action",
+			dataType: "json",
+			success : function(data) {
+			
+			   $("#Auto").val(data.fileNumAuto);
+			 
+			}
+		});
+		
+	}
+function deleteHeathFile()
+    {
+     alert(1);
+    document.formEdit.action="healthFileAction!deleteHealthFile.action?healthFileId="+$(".qq").val();
+    alert($(".qq").val());
+    document.formEdit.submit();
+    } 
+
+
+</script>
+<script>
+//检测上传健康档案时如果为空,不能上传
+/* function checkForm(){
+	var file = document.getElementById("fileSubmit").value;
+	if(file == ""){
+		return false;
+	}
+ 	var fileHouZhui =file.slice(file.lastIndexOf(".")+1).toLowerCase(); //获得文件后缀名
+	if(fileHouZhui != "xls" || fileHouZhui != "xlsx"){
+		alert("文件格式错误!");
+		return false;
+	} 
+	return true;
+} */
+	$(function(){
+		$('.btn_alert').click(function(){
+			$(this).next().show();
+			$(this).next().next().show();
+		});
+		$('.btn-close').click(function(){
+			$(this).parent().hide();
+			$(this).parent().prev().hide();
+		});
+	});
+</script>
+<script>
+    var Obtn01=document.getElementById("btn01");
+    var Obtn02=document.getElementById("btn02");
+    var Obtn03=document.getElementById("btn03");
+    var Oact  =document.getElementById("act");
+    function run01(){
+        Oact.value=1;
+    }
+    function run02(){
+        Oact.value=2;
+    }
+    function run03(){
+        Oact.value=3;
+    }
+</script>
+<script>
+//多条件查询进行分页
+function sumit(a){
+		
+			//document.getElementById("entity").submit();
+			var g = /^[1-9]*[1-9][0-9]*$/;
+            if(g.test(a)){
+            		$("#cp").val(a);
+            		$("#entity").submit();
+            }
+            else{
+            	if($("#go").val()!=''){
+            			if(g.test($("#go").val())){
+								$("#cp").val($("#go").val());
+								$("#entity").submit();
+							}
+					}
+           	 }
+}
+</script>
+<script type="text/javascript">
+		$("#news").bind("click", function () {
+			 	$(":text").val("");
+    			$("textarea").val("");
+    			$("select").val("");
+               
+               	$(":radio").eq(0).attr("checked", true);
+               /*  $(":radio").eq(3).attr("checked", true); */
+               $("#all-sex").attr("checked",true);
+        	   $("#zhengchang").attr("checked",true);
+                
+            });
+</script>
+<script type="text/javascript">
+ $("form").submit(function(){
+    	var startTime0=$(".startTime").eq(0).val();
+    	var startTime1=$(".startTime").eq(1).val();
+    	var endTime0=$(".endTime").eq(0).val();
+    	var endTime1=$(".endTime").eq(1).val();
+    	if(startTime0 != ""&&endTime0 != ""){
+    	if(startTime0>endTime0){
+      	 	$(".startTime").eq(0).val("");
+       		$(".endTime").eq(0).val("");
+       		alert("查询时间输入错误");
+       		return false;
+       	}
+       	}
+       	if(startTime1 != ""&&endTime1 != ""){
+    	if(startTime1>endTime1){
+      	 	$(".startTime").eq(1).val("");
+       		$(".endTime").eq(1).val("");
+       		alert("查询时间输入错误");
+       		return false;
+       	}
+       	}
+    })
+</script>
+<script language="javascript">
+	bijiao.onclick = function compare(){
+
+	 if(parseInt(document.getElementById("input1").value) > parseInt(document.getElementById("input2").value))
+	 {
+	  	
+	  	alert("年龄输入有误！");
+	  	document.getElementById("input1").value="";
+	  	document.getElementById("input2").value="";
+	 }
+
+	}
+</script>
+<script type="text/javascript">
+var oMask_alert=document.getElementById('mask_alert');
+var oDemo_alert=document.getElementById('demo_alert');
+var oFa=document.getElementById('fa');
+var oBtn_alert_01=document.getElementById('btn_alert_01');//添加的按钮的id为btn_alert_01
+var oForm_alert_01=document.getElementById('form_alert_01');
+
+window.onload=function(){
+if(${X}!=0||${Y}!=0){
+alert("第"+${X}+"行"+"第"+${Y}+"列出现错误");
+}
+if(${egg}==0){
+alert("导入成功");
+}
+if(${egg}==-2){
+alert("导入文件格式错误");
+}
+if(${egg}==-3){
+alert("导入文件失败");
+}
+if(${egg}==-4){
+alert("请选择导入文件");
+}
+oBtn_alert_01.onclick=alert_03;
+			 function alert_03(){
+         oMask_alert.style.display='block';//阴影
+        oDemo_alert.style.display='block'; //框
+        oForm_alert_01.style.display='block';
+}
+oFa.onclick=alert_02;
+function alert_02(){
+oMask_alert.style.display='none';
+oDemo_alert.style.display='none'; 
+}
+
+}
+</script>
+
+<script type="text/javascript">
+	$(function(){
+		$(".js-example-basic-single").select2();
+	})
+</script>
+ 
+</body>
+</html>

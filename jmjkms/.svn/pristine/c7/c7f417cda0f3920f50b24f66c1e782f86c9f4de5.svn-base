@@ -1,0 +1,238 @@
+<%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta charset="UTF-8">
+  <c:choose><c:when test="${session.comHospital.isHead==0}"><title>中电科社区健康管理平台</title></c:when><c:when test="${session.communityHospitalGroup!=null}"><title>社区健康管理系统</title></c:when><c:otherwise><title>社区健康服务站</title></c:otherwise></c:choose>
+  <link rel="stylesheet" href="/jmjkms/css/cssreset.css">
+  <link rel="stylesheet" href="/jmjkms/css/main.css">
+  <link rel="stylesheet" type="text/css" href="/jmjkms/css/sweetalert.css"> 
+  <link rel="stylesheet" href="/jmjkms/css/font-awesome-4.5.0/css/font-awesome.min.css"> 
+</head>
+<body>
+  <!-- 顶栏 start -->
+  <s:include value="/include/header.jsp" />
+  <!-- 顶栏 end -->
+  <div class="main-content clearfix">
+    <!-- 主菜单 start -->
+    <s:include value="/include/nav.jsp" />
+    <!-- 主菜单 end -->
+    <!-- 主容器 start -->
+    <div class="container">
+      <h3 class="current-title">预警管理</h3>
+      <div class="search-content">
+      <input name="yemianname" value="02203" type="hidden"/>
+        <form action="healthAlarmAction!getAlarmData.action" method="post">
+          <div class="search-item">
+          
+            <label>预警处理日期：</label>
+            <input type="text" id="startTime" name="startTime" id="dateInput1" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD '})"  value="${start }"  name="startTime" onfocus="this.blur()">
+                                    至
+            <input type="text" id="endTime" name="endTime" id="dateInput2" class="w150" onclick="laydate({istime: true, format: 'YYYY-MM-DD '})"  value="${end }"   name="endTime" onfocus="this.blur()">
+          
+            <input type="submit" value="查询" id="submit" class="btn btn-xianshi">
+            
+          </div>
+        </form>
+      </div>
+      <!-- 搜索容器 end -->	
+	 <!-- 表格容器 start -->
+	  <form action="<%=basePath %>healthAlarmAction!export.action" method="post">
+	 <h3 class="current-title">查询结果</h3>
+	   <div class="table-content">	   	   
+	   <table id="jqprint" class="table table-bordered">
+	     <thead>
+	       <tr>	         
+	         <th>居民健康档案编号</th>
+	         <th>姓名</th>
+	         <th>性别</th>
+	         <th>联系方式</th>
+	         <th>预警指标</th>
+	         <th>预警级别</th>
+	         <th>状态</th>
+	         	         
+	         <th style="text-align: center;">预警操作</th>	         
+             </tr>
+           </thead>
+			<tbody>
+			
+		    <s:iterator value="alarmDataList" var="list" status="n">
+		       
+		       <input type="hidden" name="ids" value="${list.healthFileId}" />
+		      
+		        <tr>
+		         <td>${list.fileNum}</td>
+		         <td>${list.name}</td>
+		         <c:if test="${list.sex==true}"><td>女</td></c:if>
+		         <c:if test="${list.sex==false}"><td>男</td></c:if>
+		         <td>${list.IPhone}</td>		         
+		         <td>${list.alarmQuota}</td>		         
+		         <td>${list.level}</td>
+		         
+		         <c:if test="${list.state==1}"><td>待处理</td></c:if>
+		         <c:if test="${list.state==2}"><td>已处理</td></c:if>
+		         <c:if test="${list.state==3}"><td>暂缓处理</td></c:if>
+		         <c:if test="${list.state==4}"><td>不处理</td></c:if>
+		         <c:if test="${list.state==0}"><td>无</td></c:if>
+		         
+		         <td>	          
+		            <a id='btn_alert${n.index}'  herf="javascript:;" onclick="alertF(${n.index})" style="cursor: pointer;">预警处理</a>
+		            <div id="mask_alert">
+                    </div> 
+                       <div id="demo_alert${n.index}" style="display:none;left: 50%;top: 50%;margin-left: -200px;position: fixed;margin-top: -75px;width: 480px;height: 150px;background-color: #fff;z-index: 10001;border:1px solid #ccc;border-radius: 5px;display: none;">
+				        <div id="fa${n.index}" onclick="closeF(${n.index})" style="display:none;position:absolute;right: 20px;top:20px;cursor: pointer;">
+				          <i class="fa fa-close"></i>
+				        </div>
+				        <div class="tan_tit">操作</div>
+				        <div id="button_alert_2" >
+				          <a href="healthAlarmAction!hanglehealthAlarm.action?alarmhandleresquest.status=1&alarmhandleresquest.id=${list.id}&alarmhandleresquest.meaTime=${list.meaTime }&alarmhandleresquest.devID=${list.devID}&alarmhandleresquest.level=${list.level }&alarmhandleresquest.alarmTime=${list.alarmTime }&alarmhandleresquest.alarmType=${list.alarmType }&alarmhandleresquest.alarmQuota=${list.alarmQuota }&beginTime=<fmt:formatDate value="${startTime }" pattern="yyyy-MM-dd"/>&overTime=<fmt:formatDate value="${endTime}" pattern="yyyy-MM-dd"/>"  class="btn" id="btn_write_off">待处理</a>
+				          <a href="healthAlarmAction!hanglehealthAlarm.action?alarmhandleresquest.status=2&alarmhandleresquest.id=${list.id}&alarmhandleresquest.meaTime=${list.meaTime }&alarmhandleresquest.devID=${list.devID}&alarmhandleresquest.level=${list.level }&alarmhandleresquest.alarmTime=${list.alarmTime }&alarmhandleresquest.alarmType=${list.alarmType }&alarmhandleresquest.alarmQuota=${list.alarmQuota }&beginTime=<fmt:formatDate value="${startTime }" pattern="yyyy-MM-dd"/>&overTime=<fmt:formatDate value="${endTime}" pattern="yyyy-MM-dd"/>"  class="btn" id="btn_write_off">已处理</a>
+				          <a href="healthAlarmAction!hanglehealthAlarm.action?alarmhandleresquest.status=3&alarmhandleresquest.id=${list.id}&alarmhandleresquest.meaTime=${list.meaTime }&alarmhandleresquest.devID=${list.devID}&alarmhandleresquest.level=${list.level }&alarmhandleresquest.alarmTime=${list.alarmTime }&alarmhandleresquest.alarmType=${list.alarmType }&alarmhandleresquest.alarmQuota=${list.alarmQuota }&beginTime=<fmt:formatDate value="${startTime }" pattern="yyyy-MM-dd"/>&overTime=<fmt:formatDate value="${endTime}" pattern="yyyy-MM-dd"/>" class="btn" id="btn_delete">暂缓处理</a>	         
+				          <a href="healthAlarmAction!hanglehealthAlarm.action?alarmhandleresquest.status=4&alarmhandleresquest.id=${list.id}&alarmhandleresquest.meaTime=${list.meaTime }&alarmhandleresquest.devID=${list.devID}&alarmhandleresquest.level=${list.level }&alarmhandleresquest.alarmTime=${list.alarmTime }&alarmhandleresquest.alarmType=${list.alarmType }&alarmhandleresquest.alarmQuota=${list.alarmQuota }&beginTime=<fmt:formatDate value="${startTime }" pattern="yyyy-MM-dd"/>&overTime=<fmt:formatDate value="${endTime}" pattern="yyyy-MM-dd"/>"  class="btn" id="btn_regist" >不处理</a>
+				        </div>
+				        </div>
+		            
+			     </td>	        		            
+		         </tr>
+		         </s:iterator>
+        </tbody>
+	   </table>
+	   <input type="hidden" name="flag"  id="act" value=""></input>
+	   
+	   	<!-- 分页 Start -->
+	   	<div class="sum-btn">
+		  <div class="page">
+		       ${ pageHtml } 
+		  </div>
+		  </div>
+	  <!-- 分页 end -->
+	   
+	   
+	  
+	 </div>
+	    <!-- 表格容器 end -->
+	 <div class="btn-content" style="text-align:center;">
+	     <!-- <input type="file" id="file" class="select-file">
+	      <input type="submit" class="btn"  value="导出全部"  onclick="run01()"></input> -->
+          <!-- <input type="submit" class="btn"  value="导出本页"  onclick="run02()"></input>	 --> 
+          <!-- <a href="healthAlarmAction!export.action" class="btn ">导出本页</a>  -->    
+	   </div>
+
+  </form>
+    </div>
+    <!-- 主容器 end -->
+    <!-- 底栏 Start-->
+    <s:include value="/include/footer.jsp" />
+    <!-- 底栏 Start-->
+  </div>
+
+
+<script src="/jmjkms/js/jquery-1.4.4.min.js"></script>
+<script src="/jmjkms/js/sweetalert.min.js"></script>
+<script src="/jmjkms/js/laydate/laydate.js"></script>
+<script src="/jmjkms/js/base.js"></script>
+<script src="/jmjkms/js/jquery.jqprint-0.3.js"></script>
+<script>
+    var Obtn01=document.getElementById("btn01");
+    var Obtn02=document.getElementById("btn02");
+    var Obtn03=document.getElementById("btn03");
+    var Oact  =document.getElementById("act");
+    function run01(){
+        Oact.value=1;
+    }
+    function run02(){
+        Oact.value=2;
+    }
+    function run03(){
+        Oact.value=3;
+    }
+</script>
+
+<script type="text/javascript" >
+	$(function(){
+    	if(${code}==0||${code}==2||${code}==3||${code}==4||${code}==0){
+    		endisable('${message}');
+    	}
+    });
+   function endisable(data){
+	   swal({  
+	    title: data,  
+	    showConfirmButton:true,
+	    confirmButtonText: "确定",    
+       });
+    };
+    
+</script> 
+
+    
+<script type="text/javascript">
+    $("#menu").change(function(){
+    	var value = $("#menu").val();
+    	var url = $("#yuying").attr("href");
+    	url = url +"&alarmhandleresquest.status="+value;
+    	$("#yuying").attr("href",url);
+    })
+</script>
+<script type="text/javascript">
+/*  var oMask_alert=document.getElementById('mask_alert');
+    var oDemo_alert=document.getElementById('demo_alert');
+    var oBtn_alert=document.getElementById('btn_alert');
+    var oFa=document.getElementById('fa');
+    window.onload=function(){
+      oBtn_alert.onclick=alert_01;
+      function alert_01(){
+        oMask_alert.style.display='block';
+        oDemo_alert.style.display='block';
+      } 
+      oFa.onclick=alert_02;
+      function alert_02(){
+        oMask_alert.style.display='none';
+        oDemo_alert.style.display='none';
+      }
+      
+ } */
+ function alertF(param){
+     var targetDemo = "demo_alert"+param;
+     var targetFa= "fa"+param;
+     $("#"+targetDemo).css("display","block");
+     $("#"+targetFa).css("display","block");
+ }
+ 
+ function closeF(param){
+     var targetDemo = "demo_alert"+param;
+     var targetFa= "fa"+param;
+     $("#"+targetDemo).css("display","none");
+     $("#"+targetFa).css("display","none");
+ }
+  
+ </script>
+ <script type="text/javascript">
+ $("form").submit(function(){
+    	var startTime0=$("#startTime").val();
+    	var endTime0=$("#endTime").val();
+    	if(startTime0 != ""||endTime0 != ""){
+    	if(startTime0>endTime0){
+      	 	$("#startTime").val("");
+       		$("#endTime").val("");
+       		alert("查询时间顺序输入错误");
+       		return false;
+       	}
+       	}
+       	 	if(startTime0=="" && endTime0=="" && $("#num").val()==""){
+       		alert("请输入查询条件!")
+       		return false;
+       		}
+    })
+ 
+ </script>
+</body>
+</html>

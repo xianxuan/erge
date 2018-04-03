@@ -1,0 +1,62 @@
+package com.jmjk.iservice;
+
+import java.util.Date;
+import java.util.List;
+
+import com.jmjk.entity.THealthFile;
+import com.jmjk.entity.TOldStaffHos;
+import com.jmjk.entity.view.VFollowRecord;
+import com.jmjk.pojo.AlarmGetDateGet;
+import com.jmjk.pojo.AlarmRequestParam;
+import com.jmjk.pojo.AlarmHandleRequest;
+import com.jmjk.pojo.AlarmHandleResponse;
+import com.jmjk.utils.Page;
+/**
+ * 健康预警  赖清发    8/6
+ * @author Administrator
+ *
+ */
+public interface IHealthAlarmService {
+     /**
+      * 从云端获取预警数据并分页
+      * @param page
+      * @return 返回json数据串
+      */
+	public String getAlarmData(int currentPage, int pageSize, Date startTime,
+			Date endTime, String appUserID);
+	
+	
+	/**
+	  * 预警处理
+	  * @param alarm 
+	  * @return   AlarmHandleResponse的实体
+	  */
+	public String updateAlarmType(int id, int state,int alarmType);
+	
+    /**
+     * 通过员工id拿到健康档案的一个list集合
+     */
+	 public List<TOldStaffHos> getHealthListByStaffId(int staffId);
+	 
+	 //通过社区id拿到健康档案的list
+	
+    public List<TOldStaffHos> getHealthListByCommunityHospitalId(int CommunityHospitalId);
+
+	/**
+	 * 通过责任医生查询老人档案 从三个云端系统中
+	 * @param docId 
+	 * @return
+	 */
+    public String getHealthFileFromCloudByDoctor(int docId);
+    
+    /**
+     *  通过医院负责人查询老人档案 从三个云端系统中
+     * @param hosId
+     * @return
+     */
+    public String getHealthFileFromCloudByHos(int hosI);
+
+
+
+	
+}
